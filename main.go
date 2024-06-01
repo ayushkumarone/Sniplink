@@ -75,6 +75,10 @@ func main() {
 	router.POST("/login", func(c *gin.Context) {
 		requests.LoginUser(c, db)
 	})
+
+	router.GET("/analytics", func(c *gin.Context) {
+		requests.GetUserAnalytics(c, db)
+	})
 	//  ----------------  END : Routes defined here  ----------------
 
 	router.Run("localhost:8080") // Running router on localhost port 8080
