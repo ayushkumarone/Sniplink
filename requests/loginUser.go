@@ -1,16 +1,30 @@
 package requests
 
 import (
-	"crypto/md5"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"net/http"
 
+	"github.com/ayushkumarone/Sniplinks/pkg"
 	"github.com/ayushkumarone/Sniplinks/pkg/users"
 	"github.com/gin-gonic/gin"
 )
 
+func validateUser(db *sql.DB, inputEmail string) (int, string) {
+	query := fmt.Sprintf("SELECT Email, Passwordhash FROM shorturlusers where Email='%v';", inputEmail)
+
+	var email string
+	var passwordhash string
+	if err := db.QueryRow(query).Scan(&email, &passwordhash); err != nil {
+		fmt.Print(err)
+		return 0, ""
+	}
+
+	usercount := 0
+	usercount++
+
+	return usercount, passwordhash
+}
 func LoginUser(c *gin.Context, db *sql.DB) {
 	var newUser users.User
 
@@ -19,42 +33,35 @@ func LoginUser(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	query := fmt.Sprintf("SELECT Email, Password FROM shorturlusers where Email='%v';", newUser.Email)
-
-	rows, err := db.Query(query)
-	if err != nil {
-		return
-	}
-	defer rows.Close()
-
-	var usercount int
-	var email string
-	var passwordhash string
-	for rows.Next() {
-		if err := rows.Scan(&email, &passwordhash); err != nil {
-			fmt.Print(err)
-			return
-		}
-		usercount++
-	}
+	usercount, passwordhash := validateUser(db, newUser.Email)
 	if usercount == 0 {
 		c.JSON(http.StatusConflict, gin.H{"message": "User does not exist. Please make a account to login."})
 		return
 	}
 
-	data := []byte(newUser.Password)
-	hash := md5.Sum(data)
-	hashString := hex.EncodeToString(hash[:])
+	hashString := pkg.MD5HashGenerator(newUser.Password)
 
-	if passwordhash != hashString {
+	if passwordhash != hashString { // Check for mismatch in password
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Email and Password incorrect."})
 		return
 	}
 
-	queryInsert := fmt.Sprintf("INSERT INTO shorturlusers (Name, Email, Passwordhash) VALUES ('%v', '%v', '%v');", newUser.Name, newUser.Email, hashString)
-	_, err2 := db.Exec(queryInsert)
+	// Correct password
+	queryDelete := fmt.Sprintf("DELETE FROM email_apikeys WHERE Email = '%v';", newUser.Email)
+	_, err2 := db.Exec(queryDelete)
 	if err2 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Internal Server Error"})
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "User registered"})
+
+	apiKey := pkg.GenerateApiKey(db)
+
+	queryInsert := fmt.Sprintf("INSERT INTO email_apikeys (Email, Api_key) VALUES ('%v', '%v');", newUser.Email, apiKey)
+	_, err3 := db.Exec(queryInsert)
+	if err3 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Internal Server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Logged in", "api_key": apiKey})
 }

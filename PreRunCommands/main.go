@@ -5,18 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	// "github.com/ayushkumarone/Sniplinks/pkg"
-
-	"github.com/ayushkumarone/Sniplinks/requests"
-	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	router := gin.Default() // Defining the router using gin framework.
-
-	// Accessing .env file
 	godotenv.Load(".env")
 	// Verify the access
 	// fmt.Println(os.Getenv("USER"), os.Getenv("PASSWORD"), os.Getenv("Address"), os.Getenv("DB_Name"))
@@ -49,33 +42,5 @@ func main() {
 	}
 	fmt.Println("Successfully connected to the MariaDB database!")
 
-	//  ----------------  END : Verify connection  ----------------
-
-	//  ----------------  START : Automated unused URL removal  ----------------
-
-	// go pkg.RemoveLinks(db)
-	// go pkg.RemoveApikey(db)
-
-	//  ----------------  END : Automated unused URL removal  ----------------
-
-	//  ----------------  START : Routes defined here  ----------------
-
-	router.POST("/shorten", func(c *gin.Context) {
-		requests.PostShort(c, db)
-	})
-
-	router.GET("/link/:id", func(c *gin.Context) {
-		requests.GetLinkByID(c, db)
-	})
-
-	router.POST("/register", func(c *gin.Context) {
-		requests.RegisterUser(c, db)
-	})
-
-	router.POST("/login", func(c *gin.Context) {
-		requests.LoginUser(c, db)
-	})
-	//  ----------------  END : Routes defined here  ----------------
-
-	router.Run("localhost:8080") // Running router on localhost port 8080
+	fmt.Println("Execution of Tables creation command completed")
 }

@@ -10,6 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func duplicateUrlCheck(db *sql.DB, shorturl string) int {
+	// query := fmt.Sprintf("SELECT Short FROM shorturls where Short='%v';", shorturl)
+	var count int
+
+	if err := db.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM shorturls where Short='%v';", shorturl)).Scan(&count); err != nil {
+		return 1
+	}
+
+	return count
+}
+
 func PostShort(c *gin.Context, db *sql.DB) {
 	var newLink links.Link
 
@@ -18,23 +29,8 @@ func PostShort(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	query := fmt.Sprintf("SELECT Short FROM shorturls where Short='%v';", newLink.Short)
+	duplicate := duplicateUrlCheck(db, newLink.Short)
 
-	rows, err := db.Query(query)
-	if err != nil {
-		return
-	}
-	defer rows.Close()
-
-	var duplicate int
-	for rows.Next() {
-		var short string
-		if err := rows.Scan(&short); err != nil {
-			fmt.Print(err)
-			return
-		}
-		duplicate++
-	}
 	if duplicate > 0 {
 		c.JSON(http.StatusConflict, gin.H{"error": "Short url already exist"})
 		return
@@ -44,6 +40,7 @@ func PostShort(c *gin.Context, db *sql.DB) {
 	_, err2 := db.Exec(queryInsert)
 	if err2 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Internal Server Error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Shortened link created."})
 }
