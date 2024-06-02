@@ -78,6 +78,10 @@ func main() {
 	router.GET("/analytics", func(c *gin.Context) {
 		requests.GetUserAnalytics(c, db)
 	})
+
+	router.DELETE("/link/:id", func(c *gin.Context) {
+		requests.DeleteShortByID(c, db)
+	})
 	//  ----------------  END : Routes defined here  ----------------
 
 	router.Run("localhost:8080") // Running router on localhost port 8080

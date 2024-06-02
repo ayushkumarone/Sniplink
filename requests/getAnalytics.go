@@ -25,6 +25,7 @@ func GetUserAnalytics(c *gin.Context, db *sql.DB) {
 
 	if apikey == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "This feature is only available for accounts."})
+		return
 	}
 	var email string
 	if err := db.QueryRow(fmt.Sprintf("SELECT Email FROM email_apikeys where Api_key='%v';", apikey)).Scan(&email); err != nil {
@@ -32,7 +33,7 @@ func GetUserAnalytics(c *gin.Context, db *sql.DB) {
 		return
 	}
 
-	query := fmt.Sprintf("SELECT Short, Url, HitCount, LastHit, CreatedBy FROM shorturls WHERE CreatedBy = '%s'", email)
+	query := fmt.Sprintf("SELECT Short, Url, HitCount, LastHit, CreatedBy FROM shorturls WHERE CreatedBy = '%s';", email)
 
 	rows, err := db.Query(query)
 	if err != nil {

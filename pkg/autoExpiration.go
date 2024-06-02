@@ -81,7 +81,7 @@ func RemoveLinks(db *sql.DB) {
 }
 
 func RemoveApikey(db *sql.DB) {
-	expiration := 3000
+	expiration := 730
 	time.Sleep(time.Duration(expiration))
 	deletingUnused := fmt.Sprintf("DELETE FROM email_apikeys WHERE TIMESTAMPDIFF(SECOND, Creationtime, CURRENT_TIMESTAMP) > '%v';", expiration)
 	_, err2 := db.Exec(deletingUnused) // Performing the query.

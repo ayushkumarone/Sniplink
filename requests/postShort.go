@@ -83,7 +83,7 @@ func linkInsertionByApiKey(c *gin.Context, db *sql.DB, newLink links.Link) strin
 		return "Error"
 	}
 
-	if numberOfLinks >= 25 {
+	if numberOfLinks >= 50 {
 		c.JSON(http.StatusLocked, gin.H{"message": "You have reached the maximum possible links that can be created. Please wait till the older links expire or Delete some links that were created."})
 		return "Error"
 	}
