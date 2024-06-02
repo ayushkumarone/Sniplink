@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	// "github.com/ayushkumarone/Sniplinks/pkg"
-
+	"github.com/ayushkumarone/Sniplinks/pkg"
 	"github.com/ayushkumarone/Sniplinks/requests"
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
@@ -53,8 +52,8 @@ func main() {
 
 	//  ----------------  START : Automated unused URL removal  ----------------
 
-	// go pkg.RemoveLinks(db)
-	// go pkg.RemoveApikey(db)
+	go pkg.RemoveLinks(db)
+	go pkg.RemoveApikey(db)
 
 	//  ----------------  END : Automated unused URL removal  ----------------
 
